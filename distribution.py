@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import math
 
 
-class Distribution():
+class InputDistribution:
     def __init__(self, amount, dissipation, d_min, d_max):
         self.amount = amount  # Amount of points to calculate
         self.dissipation = dissipation  # Energy dissipation rate
@@ -13,19 +13,6 @@ class Distribution():
         self.d_max = d_max  # Maximal size of the droplets in distribution
         self.d = np.full((amount, 1), d_min, dtype='float64')  # Distribution of the droplets' size
         self.pdf = np.zeros(self.d.shape)  # Probability density function of creation droplets
-        self.arg_lap = 0  # Argument for laplace function
-        self.laplace = np.zeros((4, amount))  # Laplace function values
-        self.p_1 = 0  # Probability of breaking up droplet to one droplet
-        self.p_2 = 0  # Probability of breaking up droplet to two droplets
-        self.p_3_s = 0  # Probability of creation 2 small droplets after breaking up to 3 droplets
-        self.p_3_l = 0  # Probability of creation large droplet after breaking up to 3 droplets
-        self.pdf_1 = 0  # Probability density function of no droplets breaking up
-        self.pdf_2 = 0  # Probability density function of breaking up to 2 droplets
-        self.pdf_3 = 0  # Probability density function of breaking up to 3 droplets
-        self.n_1 = 0  # Fraction of particles not subjected to breaking up
-        self.n_2 = 0  # Fraction of particles subjected to breaking up to 2 particles
-        self.n_3 = 0  # Fraction of particles subjected to breaking up to 3 particles
-        self.new_pdf = 0  # Probability density function after iteration of droplets breaking up
 
     def define_d(self):
         """
@@ -40,11 +27,12 @@ class Distribution():
         """
         pass
 
-    def input_distribution(self):
-        """
-        Calculation of distribution with set parameters
-        """
-        pass
+
+class Laplace(InputDistribution):
+    def __init__(self):
+        super().__init__(self.amount, self.dissipation, self.d_min, self.d_max)
+        self.arg_lap = 0  # Argument for Laplace function
+        self.laplace = 0  # Laplace function values
 
     def calc_arg_lap(self):
         """
@@ -65,6 +53,22 @@ class Distribution():
         Calculation of Laplace function
         """
         pass
+
+
+class NewDistributionCalculation(InputDistribution, Laplace):
+    def __init__(self):
+        super().__init__(self.amount, self.dissipation, self.d_min, self.d_max)
+        self.p_1 = 0  # Probability of breaking up droplet to one droplet
+        self.p_2 = 0  # Probability of breaking up droplet to two droplets
+        self.p_3_s = 0  # Probability of creation 2 small droplets after breaking up to 3 droplets
+        self.p_3_l = 0  # Probability of creation large droplet after breaking up to 3 droplets
+        self.pdf_1 = 0  # Probability density function of no droplets breaking up
+        self.pdf_2 = 0  # Probability density function of breaking up to 2 droplets
+        self.pdf_3 = 0  # Probability density function of breaking up to 3 droplets
+        self.n_1 = 0  # Fraction of particles not subjected to breaking up
+        self.n_2 = 0  # Fraction of particles subjected to breaking up to 2 particles
+        self.n_3 = 0  # Fraction of particles subjected to breaking up to 3 particles
+        self.new_pdf = 0  # Probability density function after iteration of droplets breaking up
 
     def find_bound_index(self, matrix, bound, right=True):
         """
@@ -90,9 +94,12 @@ class Distribution():
 
     def find_new_pdf(self):
         """
-        Calculate probability density function after iteration of breaking up
+        Calculate probability density function after an iteration of breaking up
         """
         pass
+
+
+class Distribution(InputDistribution, Laplace, NewDistributionCalculation):
 
     def iterate(self, n=1, plot=False):
         """
