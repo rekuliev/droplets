@@ -100,14 +100,9 @@ class NewDistributionCalculation(InputDistribution, Laplace):
 
 
 class Distribution(InputDistribution, Laplace, NewDistributionCalculation):
-
-    def iterate(self, n=1, plot=False):
-        """
-        Rewrite the droplet's distribution properties after n breaking up iterations
-        n : count of iterations
-        plot : if plot = True, generate plot of distribution in each iteration
-        """
-        pass
+    def __init__(self, n=1):
+        super().__init__()
+        self.n = n
 
     def plot(self):
         """
