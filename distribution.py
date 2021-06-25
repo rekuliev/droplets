@@ -18,14 +18,14 @@ class InputDistribution:
         """
         Creation of droplets' size array
         """
-        pass
+        self.d = self.d + (((self.d_max - self.d_min) / self.amount) * np.arange(self.d.size).reshape(self.d.shape))
 
     def calc_pdf(self, a_0=0.624, a_1=2.68 * (10 ** (-3)), a_2=5.82 * (10 ** (-4)), k=0.613, n=1.62):
         """
         Calculate discrete probability density function of droplets' size distribution
-        Parameters: calculated constants for machine of required type for calculation
+        Parameters: calculated constants for required machine type
         """
-        pass
+        self.pdf = ((a_0 + a_1*self.d + a_2*(self.d**2))/(self.d**5)) * np.exp(k - n/self.d)
 
 
 class Laplace:
