@@ -28,9 +28,9 @@ class InputDistribution:
         pass
 
 
-class Laplace(InputDistribution):
-    def __init__(self):
-        super().__init__(self.amount, self.dissipation, self.d_min, self.d_max)
+class Laplace:
+    def __init__(self, distribution=None):
+        self.distribution = distribution  # input distribution
         self.arg_lap = 0  # Argument for Laplace function
         self.laplace = 0  # Laplace function values
 
@@ -55,9 +55,10 @@ class Laplace(InputDistribution):
         pass
 
 
-class NewDistributionCalculation(InputDistribution, Laplace):
+class DistributionCalculation:
     def __init__(self):
-        super().__init__(self.amount, self.dissipation, self.d_min, self.d_max)
+        self.laplace = Laplace()
+        self.input_distribution = self.laplace.distribution
         self.p_1 = 0  # Probability of breaking up droplet to one droplet
         self.p_2 = 0  # Probability of breaking up droplet to two droplets
         self.p_3_s = 0  # Probability of creation 2 small droplets after breaking up to 3 droplets
@@ -99,20 +100,21 @@ class NewDistributionCalculation(InputDistribution, Laplace):
         pass
 
 
-class Distribution(InputDistribution, Laplace, NewDistributionCalculation):
+class Distribution:
     def __init__(self, n=1):
-        super().__init__()
+        self.distribution = DistributionCalculation()
+        self.input_distribution = self.distribution.input_distributionn
         self.n = n
+
+    def calculate(self):
+        """
+        Main method for calculation of whole sequence of operations to find the distribution
+        after required number of iteration
+        """
+        pass
 
     def plot(self):
         """
         Make plot of droplets' size distribution
-        """
-        pass
-
-    def calculation(self):
-        """
-        Main method for calculation of whole sequence of operations to find the distribution
-        after required number of iteration
         """
         pass
