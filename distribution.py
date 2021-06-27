@@ -11,26 +11,28 @@ class InputDistribution:
         self.dissipation = dissipation  # Energy dissipation rate
         self.d_min = d_min  # Minimal size of the droplets in distribution
         self.d_max = d_max  # Maximal size of the droplets in distribution
-        self.d = np.full((amount, 1), d_min, dtype='float64')  # Distribution of the droplets' size
-        self.pdf = np.zeros(self.d.shape)  # Probability density function of creation droplets
+        self.d = np.full((amount, 1), d_min, dtype='float64')  # Droplets' size for calculation
+        self.pdf = np.zeros(self.d.shape)  # Probability density function of droplets' size
 
     def define_d(self):
         """
         Creation of droplets' size array
+        :return: droplets' size for calculation
         """
-        self.d = self.d + (((self.d_max - self.d_min) / self.amount) * np.arange(self.d.size).reshape(self.d.shape))
+        return self.d + (((self.d_max - self.d_min) / self.amount) * np.arange(self.d.size).reshape(self.d.shape))
 
     def calc_pdf(self, a_0=0.624, a_1=2.68 * (10 ** (-3)), a_2=5.82 * (10 ** (-4)), k=0.613, n=1.62):
         """
         Calculate discrete probability density function of droplets' size distribution
         Parameters: calculated constants for required machine type
+        :return: Probability density function of droplets' size
         """
-        self.pdf = ((a_0 + a_1*self.d + a_2*(self.d**2))/(self.d**5)) * np.exp(k - n/self.d)
+        return ((a_0 + a_1*self.d + a_2*(self.d**2))/(self.d**5)) * np.exp(k - n/self.d)
 
 
 class Laplace:
     def __init__(self, distribution=None):
-        self.distribution = distribution  # input distribution
+        self.input_distribution = distribution  # input distribution
         self.arg_lap = 0  # Argument for Laplace function
         self.laplace = 0  # Laplace function values
 
@@ -38,7 +40,6 @@ class Laplace:
         """
         Calculation of arguments for Laplace values
         """
-        pass
 
     def int_lap(self, t):
         """
@@ -58,7 +59,7 @@ class Laplace:
 class DistributionCalculation:
     def __init__(self):
         self.laplace = Laplace()
-        self.input_distribution = self.laplace.distribution
+        self.input_distribution = self.laplace.input_distribution
         self.p_1 = 0  # Probability of breaking up droplet to one droplet
         self.p_2 = 0  # Probability of breaking up droplet to two droplets
         self.p_3_s = 0  # Probability of creation 2 small droplets after breaking up to 3 droplets
@@ -103,7 +104,7 @@ class DistributionCalculation:
 class Distribution:
     def __init__(self, n=1):
         self.distribution = DistributionCalculation()
-        self.input_distribution = self.distribution.input_distributionn
+        self.input_distribution = self.distribution.input_distribution
         self.n = n
 
     def calculate(self):
