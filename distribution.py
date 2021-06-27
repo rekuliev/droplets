@@ -31,35 +31,53 @@ class InputDistribution:
 
 
 class Laplace:
-    def __init__(self, distribution=None):
+    def __init__(self, distribution: InputDistribution):
         self.input_distribution = distribution  # input distribution
-        self.arg_lap = 0  # Argument for Laplace function
-        self.laplace = 0  # Laplace function values
+        self.arg_lap = self.calc_arg_lap()  # Argument for Laplace function
+        self.laplace = self.calculate_laplace()  # Laplace function values
 
     def calc_arg_lap(self):
         """
-        Calculation of arguments for Laplace values
+        Calculation of arguments for Laplace function
+        :return: arguments for Laplace function
+        ind=0: no breaking up
+        ind=1: right boundary of creation 2 droplets with current size
+        ind=2: left boundary of creation 2 droplets with current size
         """
+        return np.array(
+            [
+                (3/((2 ** 0.5) * (self.input_distribution.dissipation ** (1/3)) * np.power(self.input_distribution.d, 5/6))),
+                (3.82/((2 ** 0.5) * (self.input_distribution.dissipation ** (1/3)) * np.power((self.input_distribution.d * pow(2, 1/3)), 5/6))),
+                (3/((2 ** 0.5) * (self.input_distribution.dissipation ** (1/3)) * np.power((self.input_distribution.d * pow(2, 1/3)), 5/6))),
+                (3.82/((2 ** 0.5) * (self.input_distribution.dissipation ** (1/3)) * np.power(self.input_distribution.d, 5/6)))
+            ]
+        )
 
-    def int_lap(self, t):
+    @staticmethod
+    def int_lap(t):
         """
         Definition of Laplace function
         :param t: Laplace function argument
         :return: Laplace function value
         """
-        pass
+        return np.exp(-(t ** 2))
 
-    def laplace_calculate(self):
+    def calculate_laplace(self):
         """
         Calculation of Laplace function
+        :return: Laplace function values
         """
-        pass
+        laplace = [0] * len(self.arg_lap)
+        for i in range(len(self.arg_lap)):
+            laplace[i] = [integrate.quad(self.int_lap, 0, b)[0] for b in self.arg_lap[i]]
+        laplace = np.array(laplace)
+        return laplace
 
 
 class DistributionCalculation:
-    def __init__(self):
-        self.laplace = Laplace()
-        self.input_distribution = self.laplace.input_distribution
+    def __init__(self, distribution: InputDistribution):
+        self.laplace = Laplace(distribution)
+        self.input_distribution = distribution
         self.p_1 = 0  # Probability of breaking up droplet to one droplet
         self.p_2 = 0  # Probability of breaking up droplet to two droplets
         self.p_3_s = 0  # Probability of creation 2 small droplets after breaking up to 3 droplets
