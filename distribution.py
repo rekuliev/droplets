@@ -34,7 +34,7 @@ class Laplace:
     def __init__(self, distribution: InputDistribution):
         self.input_distribution = distribution  # input distribution
         self.arg_lap = self.calc_arg_lap()  # Argument for Laplace function
-        self.laplace = self.calculate_laplace()  # Laplace function values
+        self.value = self.calculate_laplace()  # Laplace function values
 
     def calc_arg_lap(self):
         """
@@ -90,21 +90,55 @@ class DistributionCalculation:
         self.n_3 = 0  # Fraction of particles subjected to breaking up to 3 particles
         self.new_pdf = 0  # Probability density function after iteration of droplets breaking up
 
-    def find_bound_index(self, matrix, bound, right=True):
+    @staticmethod
+    def find_bound_index(matrix, bound, right=True):
         """
         Return index of bound size for calculation
         :param matrix: matrix where to find bound index
         :param bound: bound size for calculation
-        :param right: True for the left bound, False for the right bound of calculation
-        :return: index of bound
+        :param right: True for the right boundary, False for the left boundary of calculation
+        :return: index of a boundary
         """
-        pass
+        if right:
+            for ind in range(len(matrix)):
+                if matrix[ind] > bound:
+                    if ind != 0:
+                        return ind - 1
+            return ind
+        for ind in range(len(matrix) - 1, -1, -1):
+            if matrix[ind] < bound:
+                if ind != len(matrix) - 1:
+                    return ind + 1
+        return ind
 
-    def define_probability(self):
+    def define_probability(self):  # TODO: try to optimize calculation of p_3_s and p_3_b; define return
         """
         Define probability of creation of one, two and tree droplets
+        :return: tuple of probabilities
         """
-        pass
+        p_1 = self.laplace.value[0]  # Equal to breaking up droplet to one droplet
+        p_2 = (self.laplace.value[1] - self.laplace.value[2])  # Equal to breaking up droplet to two droplet
+        temp_d = np.full((len(self.input_distribution.d), len(self.input_distribution.d)), self.input_distribution.d.T)
+        p_3_s = np.zeros_like(temp_d)
+        p_3_b = np.zeros_like(temp_d)
+        up_bound = 0.429 * self.input_distribution.d
+        down_bound = 0.944 * self.input_distribution.d
+        for i in range(len(temp_d)):
+            up_bound_ind = self.find_bound_index(self.input_distribution.d, up_bound[i])
+            if up_bound_ind == 0:
+                continue
+            else:
+                lambda_s = 2 * temp_d[i][0:up_bound_ind] + np.power(
+                    (np.power((self.input_distribution.d.T[0][i]), 3) - 2 * np.power(temp_d[i][0:up_bound_ind], 3)), 1 / 3)
+                p_3_s[i][0:up_bound_ind] = (1 / (math.sqrt(2 * math.pi) * pow(self.input_distribution.dissipation, 1 / 3))) * np.exp(
+                    -9 / (2 * temp_d[i][0:up_bound_ind] * pow(self.input_distribution.dissipation, 2 / 3) * np.power(lambda_s, 2 / 3)))
+            down_bound_ind = self.find_bound_index(self.input_distribution.d, down_bound[i], right=False)
+            lambda_b = temp_d[i][down_bound_ind:i] + pow(2, 2 / 3) * np.power(
+                (np.power((self.input_distribution.d.T[0][i]), 3) - np.power(temp_d[i][down_bound_ind:i], 3)), 1 / 3)
+            p_3_b[i][down_bound_ind:i] = (1 / (math.sqrt(2 * math.pi) * pow(self.input_distribution.dissipation, 1 / 3))) * np.exp(
+                -9 / (pow(2, 2 / 3) * np.power(
+                    (np.power((self.input_distribution.d.T[0][i]), 3) - np.power(temp_d[i][down_bound_ind:i], 3)), 1 / 3) * pow(
+                    self.input_distribution.dissipation, 2 / 3) * np.power(lambda_b, 2 / 3)))
 
     def define_pdf(self):
         """
@@ -120,9 +154,9 @@ class DistributionCalculation:
 
 
 class Distribution:
-    def __init__(self, n=1):
-        self.distribution = DistributionCalculation()
-        self.input_distribution = self.distribution.input_distribution
+    def __init__(self, distribution: InputDistribution, n=1):
+        self.distribution = DistributionCalculation(distribution)
+        self.input_distribution = distribution
         self.n = n
 
     def calculate(self):
